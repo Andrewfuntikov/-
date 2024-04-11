@@ -1,0 +1,43 @@
+#include <Gyver433.h>
+#include <TroykaAccelerometer.h>
+
+#define PIN_X A1
+#define PIN_Y A2
+#define PIN_Z A0
+
+unsigned long last_time;
+TroykaAccelerometer accel(PIN_X, PIN_Y, PIN_Z);
+
+Gyver433_TX<2> tx;
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Serial begin is OK");
+}
+
+char data[14]; // увеличили размер строки для данных
+
+void loop() {
+  // Считываем значения акселерометра
+  float x = accel.readVoltageX();
+  float y = accel.readVoltageY();
+  float z = accel.readVoltageZ();
+  x *= 10;
+  y *= 10;
+  z *= 10;
+  // Записываем данные акселерометра в строку
+  sprintf(data, "X:%02d Y:%02d Z:%02d", (int)x, (int)y, (int)z);
+
+  // Отправляем данные через радиопередатчик
+  tx.sendData(data);
+
+  // Отправляем данные через последовательный порт
+  Serial.println(data);
+
+  delay(100);
+
+  // Обновляем время
+  if(millis() - last_time > 1000){
+    last_time = millis();
+  }
+}
